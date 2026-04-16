@@ -11,4 +11,10 @@
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Auth\" />
+    <Folder Include="Dto\" />
+    <Folder Include="IService\" />
+  </ItemGroup>
+
 </Project>

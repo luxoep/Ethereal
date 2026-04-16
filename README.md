@@ -6,6 +6,29 @@
 
 - npm create vite@latest
 
+### React
+
+- 路由：React route dom v7
+    - npm i react-router-dom@7 -S
+- 状态管理：Redux
+    - npm i @reduxjs/toolkit react-redux
+- 拖拽组件：dnd kit
+    - npm i @dnd-kit/react
+
+### Material-UI
+
+- UI
+    - npm i @mui/material @emotion/react @emotion/styled
+- 时间组件：date-pickers
+    - npm i @mui/x-date-pickers
+    - npm i dayjs
+- 图表：charts
+    - npm i @mui/x-charts
+
+### eslint
+
+- npm i eslint-plugin-react -D
+
 ### vite.config
 
 ```js
@@ -17,15 +40,6 @@ export default defineConfig({
     base: '/Apps/demo/react-counse/jerrypage/dist/',
 })
 ```
-
-### React
-
-- 路由：React route dom v7
-    - npm i react-router-dom@7 -S
-- 状态管理：Redux
-    - npm i @reduxjs/toolkit react-redux
-- 拖拽组件：dnd kit
-    - npm i @dnd-kit/react
 
 #### appsettings.Development
 
@@ -43,16 +57,6 @@ export default defineConfig({
   }
 }
 ```
-
-### Material-UI
-
-- UI
-    - npm i @mui/material @emotion/react @emotion/styled
-- 时间组件：date-pickers
-    - npm i @mui/x-date-pickers@^8.0.0
-    - npm i dayjs
-- 图表：charts
-    - npm i @mui/x-charts@^8.0.0
 
 ## Ethereal-sql
 
