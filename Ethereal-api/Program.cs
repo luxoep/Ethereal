@@ -15,7 +15,7 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
-    options.SwaggerDoc("Ethereal_v1", new OpenApiInfo { Title = "Ethereal_v1", Version = "v1" });
+    options.SwaggerDoc("v1", new OpenApiInfo { Title = "Ethereal_v1", Version = "v1" });
     options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
         Name = "Authorization",
@@ -64,9 +64,10 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             OnAuthenticationFailed = con =>
             {
                 // 捕获“过期”异常
-                if (con.Exception.GetType() == typeof(SecurityTokenExpiredException))
+                // con.Exception.GetType() == typeof(SecurityTokenExpiredException)) 改为使用is关键字
+                if (con.Exception is SecurityTokenExpiredException)
                 {
-                    con.Response.Headers.Append("iSexPaired", "true");
+                    con.Response.Headers.Append("Token-Expired", "true");
                 }
 
                 return Task.CompletedTask;
@@ -74,6 +75,16 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 // 配置授权策略
+builder.Services.AddAuthorization(options =>
+{
+    options.DefaultPolicy = new AuthorizationPolicyBuilder()
+        // 访客必须是“已认证”的用户
+        .RequireAuthenticatedUser()
+        // 访客用来证明自己身份的凭证，必须是 JWT (Bearer Token)
+        .AddAuthenticationSchemes(JwtBearerDefaults.AuthenticationScheme)
+        .Build();
+});
+// 配置跨域
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("cors", corsPolicy =>
@@ -81,7 +92,7 @@ builder.Services.AddCors(options =>
         corsPolicy.AllowAnyHeader();
         corsPolicy.AllowAnyMethod();
         corsPolicy.AllowAnyOrigin();
-        corsPolicy.WithExposedHeaders("iSexPaired");
+        corsPolicy.WithExposedHeaders("Token-Expired");
     });
 });
 
