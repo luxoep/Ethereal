@@ -68,13 +68,15 @@ CREATE TABLE [dbo].[ethereal_attachment]
 (
     [Id]        INT IDENTITY (1, 1) NOT NULL,
     RecordId    INT                 NOT NULL,
+    UserId      INT                 NOT NULL,
     FileName    NVARCHAR(300)       NOT NULL,
     FilePath    NVARCHAR(MAX)       NOT NULL,
     FileSize    BIGINT              NOT NULL DEFAULT 0,
     ContentType NVARCHAR(100)       NOT NULL DEFAULT '',
     UploadedAt  DATETIME2           NOT NULL DEFAULT GETUTCDATE(),
     CONSTRAINT [PK_ethereal_attachment] PRIMARY KEY CLUSTERED ([Id] ASC),
-    CONSTRAINT FK_ethereal_attachment_Record FOREIGN KEY (RecordId) REFERENCES [dbo].[ethereal_record] (RecordId) ON DELETE CASCADE
+    CONSTRAINT FK_ethereal_attachment_Record FOREIGN KEY (RecordId) REFERENCES [dbo].[ethereal_record] (RecordId) ON DELETE CASCADE,
+    CONSTRAINT FK_ethereal_attachment_User FOREIGN KEY (UserId) REFERENCES [dbo].[ethereal_user] (UserId)
 );
 
 -- ethereal_comment (评论与活动日志 Comments & Logs) -New

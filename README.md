@@ -122,3 +122,11 @@ export default defineConfig({
   </location>
 </configuration>
 ```
+
+## Ethereal Config
+
+### Fluent Api
+
+- HasOne(): 指定主体实体(Principal)有一个依赖实体(Dependent)
+- WithOne(): 指定依赖实体有一个主体实体
+- HasForeignKey(): 指定依赖实体中的外键属性

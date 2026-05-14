@@ -63,6 +63,10 @@ public class AppDbContext : DbContext
                 .WithMany(r => r.Attachments)
                 .HasForeignKey(r => r.RecordId)
                 .OnDelete(DeleteBehavior.Cascade);
+            e.HasOne(a => a.User)
+                .WithMany(u => u.Attachments)
+                .HasForeignKey(a => a.UserId)
+                .OnDelete(DeleteBehavior.Restrict);
         });
 
         modelBuilder.Entity<Entities.EtherealComment>(e =>

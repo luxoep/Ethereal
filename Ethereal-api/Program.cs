@@ -100,6 +100,15 @@ builder.Services.AddCors(options =>
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnectionTest"))
 );
+// 防止出现报错：检测到了一个可能的物体循环轨迹
+// 1. IgnoreCycles 遇到循环时，直接忽略后续对象
+// 2. Preserve 用 $id / $ref 维护对象引用关系
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.ReferenceHandler =
+            System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
+    });
 
 var app = builder.Build();
 
