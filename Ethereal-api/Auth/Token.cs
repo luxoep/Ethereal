@@ -16,7 +16,7 @@ public class Token : TokenService.ITokenService
     }
 
     /// <summary>
-    /// 生成短期有效的访问令牌（JWT）
+    /// 生成短期有效地访问令牌（JWT）
     /// </summary>
     /// <param name="claims"> JWT 里的用户信息</param>
     /// <returns></returns>
@@ -107,7 +107,7 @@ public class Token : TokenService.ITokenService
     }
 
     /// <summary>
-    /// 生成长期有效的刷新令牌（随机数方式）
+    /// 生成长期有效地刷新令牌（随机数方式）
     /// </summary>
     /// <returns></returns>
     public string GenerateRefreshToken()
