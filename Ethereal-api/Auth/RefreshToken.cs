@@ -70,6 +70,11 @@ public class RefreshToken
             .FirstOrDefaultAsync();
     }
 
+    /// <summary>
+    /// 用户手动登出或管理员手动登出
+    /// </summary>
+    /// <param name="userId">用户id</param>
+    /// <exception cref="UnauthorizedAccessException"></exception>
     public async Task RevokeAsync(int userId)
     {
         Entities.EtherealUser? etherealUser = await _dbContext.ethereal_user

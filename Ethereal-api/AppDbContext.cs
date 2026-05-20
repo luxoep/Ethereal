@@ -20,14 +20,14 @@ public class AppDbContext : DbContext
         modelBuilder.Entity<Entities.EtherealUser>(e =>
         {
             e.ToTable("ethereal_user");
-            e.HasIndex(u => u.Username).IsUnique();
+            e.HasIndex(u => u.UserName).IsUnique();
             e.HasIndex(u => u.Email).IsUnique();
         });
         modelBuilder.Entity<Entities.EtherealUser>()
             .HasData(new Entities.EtherealUser
             {
                 UserId = 1,
-                Username = "Admin",
+                UserName = "Admin",
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword("Admin@123"),
                 Email = "admin@123",
                 FullName = "System Admin",

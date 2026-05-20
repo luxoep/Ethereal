@@ -7,6 +7,8 @@ public class Entities
     public class EtherealStatus
     {
         [Key] public int StatusId { get; set; }
+
+        // To do/InProgress/Review/Done
         [MaxLength(20)] public string Name { get; set; } = null!;
 
         #region 导航属性(一对多关系)
@@ -19,10 +21,13 @@ public class Entities
     public class EtherealUser
     {
         [Key] public int UserId { get; set; }
-        [MaxLength(20)] public string Username { get; set; } = null!;
+        [MaxLength(20)] public string UserName { get; set; } = null!;
         [MaxLength(256)] public string PasswordHash { get; set; } = null!;
         [MaxLength(100)] public string Email { get; set; } = null!;
+
         [MaxLength(100)] public string? FullName { get; set; }
+
+        // Member/System Admin/Manager/Owner
         [MaxLength(20)] public string? Role { get; set; } = "Member";
         [MaxLength(100)] public string? Department { get; set; }
         [MaxLength(30)] public string? Phone { get; set; }
@@ -48,14 +53,18 @@ public class Entities
         [MaxLength(50)] public string? SubNo { get; set; } // e.g. 26aa01-01
         [MaxLength(300)] public string? Title { get; set; }
         [MaxLength(1000)] public string? Description { get; set; }
+
         public int StatusId { get; set; } = 1;
+
+        // Low|Medium|High
         [MaxLength(20)] public string Priority { get; set; } = "Medium";
         public int? AssigneeUserId { get; set; }
         public int? CreatorRecordUserId { get; set; }
         public DateTime StartDate { get; set; } = DateTime.UtcNow;
         public DateTime? DueDate { get; set; }
-        public DateTime? CompletedAt { get; set; }
-        public int OrderSortNumber { get; set; }
+        public DateTime? CompletedAt { get; set; } = DateTime.UtcNow;
+        public DateTime? UpdatedAt { get; set; } = DateTime.UtcNow;
+        public int OrderSortNumber { get; set; } = 0;
 
         #region 导航属性(多对一关系)
 
