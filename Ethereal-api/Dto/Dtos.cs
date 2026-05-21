@@ -167,4 +167,46 @@ public class Dtos
 
         public DateTime StartDate { get; set; }
     }
+
+    public class EtherealAttachmentDto
+    {
+        public int Id { get; set; }
+        public int RecordId { get; set; }
+        public int UserId { get; set; }
+        public string? FileName { get; set; } = string.Empty;
+        public long FileSize { get; set; }
+        public int FileVersion { get; set; }
+        public bool FileStatus { get; set; }
+        public string? ContentType { get; set; } = string.Empty;
+        public DateTime UploadedAt { get; set; }
+        public EtherealUserDto? User { get; set; }
+    }
+
+    public class CreateAttachmentDto
+    {
+        [Required] public int RecordId { get; set; }
+
+        [Required] public IFormFile File { get; set; } = null!;
+    }
+
+    public class EtherealCommentDto
+    {
+        public int Id { get; set; }
+        public int RecordId { get; set; }
+        public int UserId { get; set; }
+        public string Content { get; set; } = string.Empty;
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        public EtherealUserDto? User { get; set; }
+    }
+
+    public class CreateEtherealCommentDto
+    {
+        [Required] public int RecordId { get; set; }
+        [Required] [MaxLength(1000)] public string Content { get; set; } = string.Empty;
+    }
+
+    public class UpdateEtherealCommentDto
+    {
+        [Required] [StringLength(1000)] public string Content { get; set; } = string.Empty;
+    }
 }

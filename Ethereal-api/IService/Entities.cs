@@ -90,7 +90,9 @@ public class Entities
         public int UserId { get; set; }
         [MaxLength(300)] public string FileName { get; set; } = null!;
         [MaxLength(1000)] public string FilePath { get; set; } = null!;
-        public long FileSize { get; set; } = 0;
+        public long FileSize { get; set; }
+        public int FileVersion { get; set; } = 1;
+        public bool FileStatus { get; set; } = true;
         [MaxLength(100)] public string ContentType { get; set; } = string.Empty;
         public DateTime UploadedAt { get; set; } = DateTime.UtcNow;
 

@@ -72,6 +72,8 @@ CREATE TABLE [dbo].[ethereal_attachment]
     FileName    NVARCHAR(300)       NOT NULL,
     FilePath    NVARCHAR(MAX)       NOT NULL,
     FileSize    BIGINT              NOT NULL DEFAULT 0,
+    FileVersion INT                 NOT NULL DEFAULT 1,
+    FileStatus  BIT                 NOT NULL DEFAULT 1,
     ContentType NVARCHAR(100)       NOT NULL DEFAULT '',
     UploadedAt  DATETIME2           NOT NULL DEFAULT GETUTCDATE(),
     CONSTRAINT [PK_ethereal_attachment] PRIMARY KEY CLUSTERED ([Id] ASC),
