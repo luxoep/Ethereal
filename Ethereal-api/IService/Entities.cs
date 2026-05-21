@@ -27,7 +27,7 @@ public class Entities
 
         [MaxLength(100)] public string? FullName { get; set; }
 
-        // Member/System Admin/Manager/Owner
+        // 'System Admin', 'Manager', 'Member','Owner'
         [MaxLength(20)] public string? Role { get; set; } = "Member";
         [MaxLength(100)] public string? Department { get; set; }
         [MaxLength(30)] public string? Phone { get; set; }

@@ -31,7 +31,7 @@ CREATE TABLE [dbo].[ethereal_user]
     CONSTRAINT UQ_ethereal_user_Username UNIQUE (Username),
     CONSTRAINT UQ_ethereal_user_Email UNIQUE (Email),
 -- 限制 Role 取值范围
-    CONSTRAINT CK_ethereal_user_Role CHECK (Role IN ('Admin', 'Manager', 'Member'))
+    CONSTRAINT CK_ethereal_user_Role CHECK (Role IN ('System Admin', 'Manager', 'Member','Owner'))
 );
 
 -- ethereal_record

@@ -40,7 +40,7 @@ public class Dtos
 
     public class CreateEtherealUserDto
     {
-        [Required] [MaxLength(20)] public string Username { get; set; } = null!;
+        [Required] [MaxLength(20)] public string UserName { get; set; } = null!;
 
         [Required]
         [MinLength(8)]
@@ -54,10 +54,12 @@ public class Dtos
 
         [MaxLength(100)] public string? FullName { get; set; }
 
-        // Member/System Admin/Manager/Owner
+        // 'System Admin', 'Manager', 'Member','Owner'
         [MaxLength(20)] public string? Role { get; set; }
 
         [MaxLength(100)] public string? Department { get; set; }
+
+        [MaxLength(30)] public string? Phone { get; set; }
 
         [MaxLength(100)] public string? Position { get; set; }
     }
@@ -71,6 +73,8 @@ public class Dtos
         [MaxLength(20)] public string? Role { get; set; }
 
         [MaxLength(100)] public string? Department { get; set; }
+
+        [MaxLength(30)] public string? Phone { get; set; }
 
         [MaxLength(100)] public string? Position { get; set; }
 
