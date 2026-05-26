@@ -8,7 +8,7 @@ public interface IEtherealUserService
     Task<Dtos.EtherealUserDto> GetEtherealUser(int id);
     Task<Dtos.EtherealUserDto> CreateEtherealUser(Dtos.CreateEtherealUserDto addEtherealUser);
     Task<Dtos.EtherealUserDto> UpdateEtherealUser(int id, Dtos.UpdateEtherealUserDto updateEtherealUser);
-    Task<Response.ApiResponse<string>> ChangePassword(int id, Dtos.ChangePasswordDto changePasswordDto);
+    Task<Response.ApiResponse<string>> ChangePassword(int id, Dtos.ChangePasswordDto changePassword);
 }
 
 public interface IEtherealRecordService

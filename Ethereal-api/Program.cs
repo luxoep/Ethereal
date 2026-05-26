@@ -1,5 +1,6 @@
 using System.Text;
 using Ethereal_api;
+using Ethereal_api.IService;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
@@ -109,6 +110,8 @@ builder.Services.AddControllers()
         options.JsonSerializerOptions.ReferenceHandler =
             System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
     });
+
+builder.Services.AddScoped<IEtherealUserService, ReviewApi.EtherealUserApi>();
 
 var app = builder.Build();
 
