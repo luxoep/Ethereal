@@ -12,7 +12,7 @@ CREATE TABLE [dbo].[ethereal_status]
 CREATE TABLE [dbo].[ethereal_user]
 (
     [UserId]           INT IDENTITY (1, 1) NOT NULL,
-    Username           NVARCHAR(50)        NOT NULL,
+    UserName           NVARCHAR(50)        NOT NULL,
     PasswordHash       NVARCHAR(256)       NOT NULL,
     Email              NVARCHAR(100)       NOT NULL,
     FullName           NVARCHAR(100)       NOT NULL,
@@ -28,7 +28,7 @@ CREATE TABLE [dbo].[ethereal_user]
 
     CONSTRAINT [PK_ethereal_user] PRIMARY KEY CLUSTERED ([UserId] ASC),
 -- 保证数据的唯一性（Unique）
-    CONSTRAINT UQ_ethereal_user_Username UNIQUE (Username),
+    CONSTRAINT UQ_ethereal_user_UserName UNIQUE (UserName),
     CONSTRAINT UQ_ethereal_user_Email UNIQUE (Email),
 -- 限制 Role 取值范围
     CONSTRAINT CK_ethereal_user_Role CHECK (Role IN ('System Admin', 'Manager', 'Member','Owner'))

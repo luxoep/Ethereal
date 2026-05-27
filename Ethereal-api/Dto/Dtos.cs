@@ -66,6 +66,7 @@ public class Dtos
 
     public class UpdateEtherealUserDto
     {
+        [Required] [MaxLength(20)] public string UserName { get; set; } = null!;
         [EmailAddress] [MaxLength(100)] public string? Email { get; set; }
 
         [MaxLength(100)] public string? FullName { get; set; }
@@ -134,9 +135,9 @@ public class Dtos
 
         public int? AssigneeUserId { get; set; }
 
-        public DateTime? StartDate { get; set; }
+        public DateTime StartDate { get; set; }
 
-        public DateTime? DueDate { get; set; }
+        public DateTime DueDate { get; set; }
     }
 
     public class UpdateEtherealRecordDto
