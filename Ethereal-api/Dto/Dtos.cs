@@ -148,28 +148,32 @@ public class Dtos
 
         [MaxLength(1000)] public string? Description { get; set; }
 
-        public int? StatusId { get; set; }
+        public int StatusId { get; set; }
 
         [MaxLength(20)] public string? Priority { get; set; }
 
         public int? AssigneeUserId { get; set; }
 
-        public DateTime? StartDate { get; set; }
+        public DateTime StartDate { get; set; }
 
-        public DateTime? DueDate { get; set; }
+        public DateTime DueDate { get; set; }
+
+        public DateTime UpdatedAt { get; set; }
 
         public int OrderSortNumber { get; set; }
     }
 
     public class UpdateCompletedRecordDto
     {
+        public int StatusId { get; set; }
+        public DateTime UpdatedAt { get; set; }
         public DateTime? CompletedAt { get; set; }
     }
 
     public class MoveEtherealRecordDto
     {
         [Range(0, int.MaxValue)] public int OrderSortNumber { get; set; }
-
+        public DateTime UpdatedAt { get; set; }
         public DateTime StartDate { get; set; }
     }
 

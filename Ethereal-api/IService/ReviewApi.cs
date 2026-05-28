@@ -157,15 +157,14 @@ public class ReviewApi
     public class EtherealRecordApi(AppDbContext appDbContext) : IEtherealRecordService
     {
         private readonly AppDbContext _appDbContext = appDbContext;
-        private IEtherealRecordService _etherealRecordServiceImplementation;
 
         private async Task<Dtos.EtherealRecordDto> ResponseRecord(int recordId)
         {
             Entities.EtherealRecord? record = await _appDbContext.ethereal_record
+                .AsNoTracking()
                 .Include(r => r.Status)
                 .Include(r => r.Assignee)
                 .Include(r => r.Creator)
-                .AsNoTracking()
                 .FirstOrDefaultAsync(r => r.RecordId == recordId);
 
             if (record == null)
@@ -316,20 +315,184 @@ public class ReviewApi
             return await ResponseRecord(etherealRecord.RecordId);
         }
 
-        public Task<Dtos.EtherealRecordDto> UpdateEtherealRecord(int id,
+        public async Task<Dtos.EtherealRecordDto> UpdateEtherealRecord(int id,
             Dtos.UpdateEtherealRecordDto updateEtherealRecord)
         {
-            return _etherealRecordServiceImplementation.UpdateEtherealRecord(id, updateEtherealRecord);
+            Entities.EtherealRecord? record = await _appDbContext.ethereal_record
+                .FirstOrDefaultAsync(r => r.RecordId == id);
+
+            if (record == null)
+                throw new KeyNotFoundException("Update Record is not found");
+
+            record.SubNo = updateEtherealRecord.SubNo;
+            record.Title = updateEtherealRecord.Title;
+            record.Description = updateEtherealRecord.Description;
+            record.StatusId = updateEtherealRecord.StatusId;
+            record.Priority = updateEtherealRecord.Priority!;
+            record.AssigneeUserId = updateEtherealRecord.AssigneeUserId;
+            record.StartDate = updateEtherealRecord.StartDate;
+            record.DueDate = updateEtherealRecord.DueDate;
+            record.UpdatedAt = updateEtherealRecord.UpdatedAt;
+            record.OrderSortNumber = updateEtherealRecord.OrderSortNumber;
+
+            await _appDbContext.SaveChangesAsync();
+
+            return await ResponseRecord(record.RecordId);
         }
 
-        public Task<Dtos.EtherealRecordDto> UpdateCompletedRecord(int id, Dtos.UpdateCompletedRecordDto dto)
+        public async Task<Dtos.EtherealRecordDto> UpdateCompletedRecord(int id, Dtos.UpdateCompletedRecordDto dto)
         {
-            return _etherealRecordServiceImplementation.UpdateCompletedRecord(id, dto);
+            Entities.EtherealRecord? record = await _appDbContext.ethereal_record
+                .FirstOrDefaultAsync(r => r.RecordId == id);
+
+            if (record == null)
+                throw new KeyNotFoundException("Update Record is not found");
+
+            record.UpdatedAt = dto.UpdatedAt;
+            record.StatusId = dto.StatusId;
+            record.CompletedAt = dto.CompletedAt;
+
+            await _appDbContext.SaveChangesAsync();
+
+            return await ResponseRecord(record.RecordId);
         }
 
-        public Task<Dtos.EtherealRecordDto> MoveEtherealRecord(int id, Dtos.MoveEtherealRecordDto moveEtherealRecordDto)
+        public async Task<Dtos.EtherealRecordDto> MoveEtherealRecord(int id,
+            Dtos.MoveEtherealRecordDto moveEtherealRecordDto)
         {
-            return _etherealRecordServiceImplementation.MoveEtherealRecord(id, moveEtherealRecordDto);
+            Entities.EtherealRecord? record = await _appDbContext.ethereal_record
+                .FirstOrDefaultAsync(r => r.RecordId == id);
+
+            if (record == null)
+                throw new KeyNotFoundException("Update Record is not found");
+
+            record.OrderSortNumber = moveEtherealRecordDto.OrderSortNumber;
+            record.UpdatedAt = moveEtherealRecordDto.UpdatedAt;
+            record.StartDate = moveEtherealRecordDto.StartDate;
+
+            await _appDbContext.SaveChangesAsync();
+
+            return await ResponseRecord(record.RecordId);
+        }
+    }
+
+    public class EtherealAttachmentApi(AppDbContext appDbContext) : IEtherealAttachmentService
+    {
+        private readonly AppDbContext _appDbContext = appDbContext;
+
+        private const string UploadFolderUrl = @"J:\Ethereal\Files";
+
+        private const long MaxFileSize = 10 * 1024 * 1024;
+
+        private IEtherealAttachmentService _etherealAttachmentServiceImplementation;
+
+        // 清理非法字符
+        private string GetSafePath(string relativePath)
+        {
+            if (string.IsNullOrWhiteSpace(relativePath)) return "Default";
+
+            foreach (char c in Path.GetInvalidPathChars())
+            {
+                relativePath = relativePath.Replace(c, '_');
+            }
+
+            return relativePath.Replace("..", "_");
+        }
+
+        private async Task<Dtos.EtherealAttachmentDto> ResponseAttachment(int id)
+        {
+            Entities.EtherealAttachment? attachment = await _appDbContext.ethereal_attachment
+                .AsNoTracking()
+                .Include(u => u.User)
+                .FirstOrDefaultAsync(a => a.Id == id);
+            if (attachment == null)
+                throw new KeyNotFoundException("Attachment is not found");
+
+            return new Dtos.EtherealAttachmentDto()
+            {
+                Id = attachment.Id,
+                RecordId = attachment.RecordId,
+                UserId = attachment.UserId,
+                FileName = attachment.FileName,
+                FileSize = attachment.FileSize,
+                FileVersion = attachment.FileVersion,
+                FileStatus = attachment.FileStatus,
+                ContentType = attachment.ContentType,
+                UploadedAt = attachment.UploadedAt,
+                User = attachment.User == null
+                    ? null
+                    : new Dtos.EtherealUserDto()
+                    {
+                        UserId = attachment.User.UserId,
+                        UserName = attachment.User.UserName,
+                        Email = attachment.User.Email,
+                        FullName = attachment.User.FullName,
+                        Role = attachment.User.Role,
+                        Department = attachment.User.Department,
+                        Position = attachment.User.Position,
+                        IsActive = attachment.User.IsActive,
+                    }
+            };
+        }
+
+        public async Task<Dtos.EtherealAttachmentDto> GetAttachmentById(int id)
+        {
+            return await ResponseAttachment(id);
+        }
+
+        public async Task<List<Dtos.EtherealAttachmentDto>> GetAttachmentsByUserId(int userId)
+        {
+            List<Entities.EtherealAttachment> attachments = await _appDbContext.ethereal_attachment
+                .AsNoTracking()
+                .Include(u => u.User)
+                .ToListAsync();
+
+            List<Dtos.EtherealAttachmentDto> query = new List<Dtos.EtherealAttachmentDto>();
+
+            foreach (Entities.EtherealAttachment item in attachments)
+            {
+                if (item.UserId == userId)
+                {
+                    query.Add(new Dtos.EtherealAttachmentDto()
+                    {
+                        Id = item.Id,
+                        RecordId = item.RecordId,
+                        UserId = item.UserId,
+                        FileName = item.FileName,
+                        FileSize = item.FileSize,
+                        FileVersion = item.FileVersion,
+                        FileStatus = item.FileStatus,
+                        ContentType = item.ContentType,
+                        UploadedAt = item.UploadedAt,
+                        User = item.User == null
+                            ? null
+                            : new Dtos.EtherealUserDto()
+                            {
+                                UserName = item.User.UserName,
+                                Email = item.User.Email,
+                                FullName = item.User.FullName,
+                                Role = item.User.Role,
+                            }
+                    });
+                }
+            }
+
+            return query;
+        }
+
+        public Task<List<Dtos.EtherealAttachmentDto>> GetAttachmentsByRecordId(int recordId)
+        {
+            return _etherealAttachmentServiceImplementation.GetAttachmentsByRecordId(recordId);
+        }
+
+        public Task<Dtos.EtherealAttachmentDto> CreateAttachment(Dtos.CreateAttachmentDto addAttachmentDto)
+        {
+            return _etherealAttachmentServiceImplementation.CreateAttachment(addAttachmentDto);
+        }
+
+        public Task<Response.ApiResponse<string>> DeleteAttachment(int id)
+        {
+            return _etherealAttachmentServiceImplementation.DeleteAttachment(id);
         }
     }
 }
