@@ -183,6 +183,8 @@ public class Dtos
         public int RecordId { get; set; }
         public int UserId { get; set; }
         public string? FileName { get; set; } = string.Empty;
+
+        public string FilePath { get; set; } = null!;
         public long FileSize { get; set; }
         public int FileVersion { get; set; }
         public bool FileStatus { get; set; }
@@ -195,7 +197,17 @@ public class Dtos
     {
         [Required] public int RecordId { get; set; }
 
+        [Required] public int UserId { get; set; }
+
         [Required] public IFormFile File { get; set; } = null!;
+    }
+
+    public class CreateAttachmentsDto
+    {
+        public int RecordId { get; set; }
+        public int UserId { get; set; }
+
+        public IFormFileCollection? Files { get; set; }
     }
 
     public class EtherealCommentDto

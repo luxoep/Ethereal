@@ -27,6 +27,7 @@ public interface IEtherealAttachmentService
     Task<List<Dtos.EtherealAttachmentDto>> GetAttachmentsByUserId(int userId);
     Task<List<Dtos.EtherealAttachmentDto>> GetAttachmentsByRecordId(int recordId);
     Task<Dtos.EtherealAttachmentDto> CreateAttachment(Dtos.CreateAttachmentDto addAttachmentDto);
+    Task<List<Dtos.EtherealAttachmentDto>> CreateAttachmentsDto(Dtos.CreateAttachmentsDto addAttachmentsDto);
     Task<Response.ApiResponse<string>> DeleteAttachment(int id);
 }
 
