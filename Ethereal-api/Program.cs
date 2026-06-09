@@ -113,6 +113,7 @@ builder.Services.AddControllers()
 
 builder.Services.AddScoped<IEtherealUserService, ReviewApi.EtherealUserApi>();
 builder.Services.AddScoped<IEtherealRecordService, ReviewApi.EtherealRecordApi>();
+builder.Services.AddScoped<IEtherealAttachmentService, ReviewApi.EtherealAttachmentApi>();
 
 var app = builder.Build();
 

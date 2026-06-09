@@ -1,4 +1,5 @@
 ﻿using Ethereal_api.Dto;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 
@@ -380,7 +381,6 @@ public class ReviewApi
     public class EtherealAttachmentApi(AppDbContext appDbContext) : IEtherealAttachmentService
     {
         private readonly AppDbContext _appDbContext = appDbContext;
-        private IEtherealAttachmentService _etherealAttachmentServiceImplementation;
 
         private const string UploadFolderUrl = @"J:\Ethereal\Files";
 
@@ -598,13 +598,13 @@ public class ReviewApi
             return await ResponseAttachment(attachment.Id);
         }
 
-        public async Task<List<Dtos.EtherealAttachmentDto>> CreateAttachmentsDto(
+        public async Task<List<Dtos.UploadAttachmentResultDto>> CreateAttachmentsDto(
             Dtos.CreateAttachmentsDto addAttachmentsDto)
         {
             if (addAttachmentsDto.Files == null || addAttachmentsDto.Files.Count == 0)
                 throw new KeyNotFoundException("Invalid Files");
 
-            List<Dtos.EtherealAttachmentDto> resFileList = new List<Dtos.EtherealAttachmentDto>();
+            List<Dtos.UploadAttachmentResultDto> resFile = new List<Dtos.UploadAttachmentResultDto>();
             // 记录成功写入磁盘的文件路径
             List<string> tempSavedFiles = new List<string>();
             // 根据RecordId创建文件夹
@@ -614,45 +614,51 @@ public class ReviewApi
             // 自动判断文件夹是否存在
             Directory.CreateDirectory(folderPath);
 
-            // 开启数据库师傅
+            // 开启数据库事务
             await using IDbContextTransaction transaction = await _appDbContext.Database.BeginTransactionAsync();
 
             try
             {
                 foreach (IFormFile item in addAttachmentsDto.Files)
                 {
-                    Dtos.EtherealAttachmentDto attachment = new Dtos.EtherealAttachmentDto()
+                    Dtos.UploadAttachmentResultDto result = new Dtos.UploadAttachmentResultDto()
                     {
                         FileName = item.FileName,
                     };
-                    // 获取上传文件名
-                    string originalFileName = Path.GetFileName(item.FileName);
-                    // 获取文件完整路径
-                    string filePath = Path.Combine(folderPath, originalFileName);
 
                     if (item.Length == 0)
                     {
-                        attachment.FileName = "Invalid File";
-                        resFileList.Add(attachment);
+                        result.Success = false;
+                        result.Message = "File is empty";
+                        resFile.Add(result);
                         continue;
                     }
 
                     if (item.Length > MaxFileSize)
                     {
-                        attachment.FileName = $"Size Exceeded {item.Length / 1024.0 / 1024.0:F2}MB";
-                        resFileList.Add(attachment);
+                        result.Success = false;
+                        result.Message = $"File exceeds {MaxFileSize / 1024 / 1024}MB limit";
+
+                        resFile.Add(result);
                         continue;
                     }
 
+                    // 获取上传文件名
+                    string originalFileName = Path.GetFileName(item.FileName);
+                    // 获取文件完整路径
+                    string filePath = Path.Combine(folderPath, originalFileName);
+
                     // 重复检查
-                    if (File.Exists(filePath) ||
-                        await _appDbContext.ethereal_attachment
-                            .AnyAsync(f =>
-                                f.RecordId == addAttachmentsDto.RecordId &&
-                                f.FileName == item.FileName))
+                    bool exists = await _appDbContext.ethereal_attachment
+                        .AnyAsync(f =>
+                            f.RecordId == addAttachmentsDto.RecordId &&
+                            f.FileName == originalFileName);
+
+                    if (exists)
                     {
-                        attachment.FileName = "duplicate";
-                        resFileList.Add(attachment);
+                        result.Success = false;
+                        result.Message = $"File {item.FileName} is Duplicate file";
+                        resFile.Add(result);
                         continue;
                     }
 
@@ -679,11 +685,29 @@ public class ReviewApi
                         UploadedAt = DateTime.UtcNow
                     };
                     await _appDbContext.ethereal_attachment.AddAsync(newFile);
+
+                    result.Success = true;
+                    result.Message = "Upload Success";
+
+                    result.Attachment = new Dtos.EtherealAttachmentDto()
+                    {
+                        RecordId = newFile.RecordId,
+                        UserId = newFile.UserId,
+                        FileName = newFile.FileName,
+                        FileSize = newFile.FileSize,
+                        FileVersion = newFile.FileVersion,
+                        FileStatus = newFile.FileStatus,
+                        ContentType = newFile.ContentType,
+                        UploadedAt = newFile.UploadedAt
+                    };
+                    resFile.Add(result);
                 }
 
                 await _appDbContext.SaveChangesAsync();
 
                 await transaction.CommitAsync();
+
+                return resFile;
             }
             catch (Exception e)
             {
@@ -695,14 +719,58 @@ public class ReviewApi
 
                 throw;
             }
-
-            return resFileList;
         }
 
+        public async Task<FileStreamResult> DownloadAttachment(int id)
+        {
+            Entities.EtherealAttachment? attachment =
+                await _appDbContext.ethereal_attachment.FirstOrDefaultAsync(f => f.Id == id);
+
+            if (attachment == null)
+                throw new KeyNotFoundException("Attachment not found");
+
+            if (!File.Exists(attachment.FilePath))
+                throw new FileNotFoundException("Physical file missing");
+
+            FileStream stream = new FileStream(attachment.FilePath, FileMode.Open, FileAccess.Read);
+
+            return new FileStreamResult(stream, attachment.ContentType ?? "application/octet-stream")
+            {
+                FileDownloadName = attachment.FileName,
+            };
+        }
 
         public async Task<Response.ApiResponse<string>> DeleteAttachment(int id)
         {
-            return new Response.ApiSuccessResponse<string>("Deleted Attachment Access");
+            Entities.EtherealAttachment? attachment =
+                await _appDbContext.ethereal_attachment.FirstOrDefaultAsync(f => f.Id == id);
+
+            if (attachment == null)
+                throw new KeyNotFoundException("Attachment not found");
+
+            // 开启数据库事务
+            await using IDbContextTransaction transaction =
+                await _appDbContext.Database.BeginTransactionAsync();
+
+            try
+            {
+                if (!string.IsNullOrEmpty(attachment.FilePath) && File.Exists(attachment.FilePath))
+                    File.Delete(attachment.FilePath);
+
+                _appDbContext.ethereal_attachment.Remove(attachment);
+
+                await _appDbContext.SaveChangesAsync();
+
+                await transaction.CommitAsync();
+
+                return new Response.ApiSuccessResponse<string>("Deleted Attachment Access");
+            }
+            catch (Exception e)
+            {
+                await transaction.RollbackAsync();
+
+                return new Response.ApiErrorResponse<string>($"Delete failed: {e.Message}");
+            }
         }
     }
 }

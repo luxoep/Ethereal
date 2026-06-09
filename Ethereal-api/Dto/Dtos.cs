@@ -205,9 +205,21 @@ public class Dtos
     public class CreateAttachmentsDto
     {
         public int RecordId { get; set; }
+
         public int UserId { get; set; }
 
-        public IFormFileCollection? Files { get; set; }
+        public List<IFormFile> Files { get; set; } = [];
+    }
+
+    public class UploadAttachmentResultDto
+    {
+        public string FileName { get; set; } = string.Empty;
+
+        public bool Success { get; set; }
+
+        public string Message { get; set; } = string.Empty;
+
+        public EtherealAttachmentDto? Attachment { get; set; }
     }
 
     public class EtherealCommentDto
