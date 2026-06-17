@@ -43,6 +43,15 @@ builder.Services.AddSwaggerGen(options =>
     });
 });
 
+// 连接到app settings中的数据连接字符串
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnectionTest"))
+);
+
+builder.Services.AddScoped<IEtherealUserService, ReviewApi.EtherealUserApi>();
+builder.Services.AddScoped<IEtherealRecordService, ReviewApi.EtherealRecordApi>();
+builder.Services.AddScoped<IEtherealAttachmentService, ReviewApi.EtherealAttachmentApi>();
+builder.Services.AddScoped<IEtherealCommentService, ReviewApi.EtherealCommentApi>();
 // 依赖注入Token
 builder.Services.AddSingleton<TokenService.ITokenService, Token>();
 builder.Services.AddScoped<RefreshToken>();
@@ -102,10 +111,6 @@ builder.Services.AddCors(options =>
     });
 });
 
-// 连接到app settings中的数据连接字符串
-builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnectionTest"))
-);
 // 防止出现报错：检测到了一个可能的物体循环轨迹
 // 1. IgnoreCycles 遇到循环时，直接忽略后续对象
 // 2. Preserve 用 $id / $ref 维护对象引用关系
@@ -115,11 +120,6 @@ builder.Services.AddControllers()
         options.JsonSerializerOptions.ReferenceHandler =
             System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
     });
-
-builder.Services.AddScoped<IEtherealUserService, ReviewApi.EtherealUserApi>();
-builder.Services.AddScoped<IEtherealRecordService, ReviewApi.EtherealRecordApi>();
-builder.Services.AddScoped<IEtherealAttachmentService, ReviewApi.EtherealAttachmentApi>();
-builder.Services.AddScoped<IEtherealCommentService, ReviewApi.EtherealCommentApi>();
 
 var app = builder.Build();
 
