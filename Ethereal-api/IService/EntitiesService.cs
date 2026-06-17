@@ -38,7 +38,7 @@ public interface IEtherealCommentService
     Task<Dtos.EtherealCommentDto> GetCommentById(int id);
     Task<List<Dtos.EtherealCommentDto>> GetCommentsByUserId(int userId);
     Task<List<Dtos.EtherealCommentDto>> GetCommentsByRecordId(int recordId);
-    Task<Dtos.EtherealCommentDto> CreateEtherealComment(Dtos.CreateEtherealCommentDto addCommentDto);
+    Task<Dtos.EtherealCommentDto> CreateEtherealComment(Dtos.CreateEtherealCommentDto addCommentDto, int userIdClaim);
     Task<Dtos.EtherealCommentDto> UpdateEtherealComment(int id, Dtos.UpdateEtherealCommentDto updateCommentDto);
     Task<Response.ApiResponse<string>> DeleteComment(int id);
 }

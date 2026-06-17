@@ -1,5 +1,6 @@
 using System.Text;
 using Ethereal_api;
+using Ethereal_api.Auth;
 using Ethereal_api.IService;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
@@ -41,6 +42,10 @@ builder.Services.AddSwaggerGen(options =>
         }
     });
 });
+
+// 依赖注入Token
+builder.Services.AddSingleton<TokenService.ITokenService, Token>();
+builder.Services.AddScoped<RefreshToken>();
 
 // 检查密钥是否为空
 string secretKey = builder.Configuration["SecretKey"] ??
@@ -114,6 +119,7 @@ builder.Services.AddControllers()
 builder.Services.AddScoped<IEtherealUserService, ReviewApi.EtherealUserApi>();
 builder.Services.AddScoped<IEtherealRecordService, ReviewApi.EtherealRecordApi>();
 builder.Services.AddScoped<IEtherealAttachmentService, ReviewApi.EtherealAttachmentApi>();
+builder.Services.AddScoped<IEtherealCommentService, ReviewApi.EtherealCommentApi>();
 
 var app = builder.Build();
 

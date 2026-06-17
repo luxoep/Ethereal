@@ -1,4 +1,5 @@
-﻿using Ethereal_api.Dto;
+﻿using System.Security.Claims;
+using Ethereal_api.Dto;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
@@ -771,6 +772,173 @@ public class ReviewApi
 
                 return new Response.ApiErrorResponse<string>($"Delete failed: {e.Message}");
             }
+        }
+    }
+
+    public class EtherealCommentApi(AppDbContext appDbContext) : IEtherealCommentService
+    {
+        private readonly AppDbContext _appDbContext = appDbContext;
+
+        private async Task<(Entities.EtherealComment, Entities.EtherealUser)> ResponseComment(int id)
+        {
+            Entities.EtherealComment? comment = await _appDbContext.ethereal_comment
+                .AsNoTracking()
+                .Include(u => u.User)
+                .FirstOrDefaultAsync(f => f.Id == id);
+
+            if (comment == null)
+                throw new KeyNotFoundException("Comment does not exist");
+
+            if (comment.User == null)
+                throw new KeyNotFoundException("User not found");
+
+            return (comment, comment.User);
+        }
+
+        private Dtos.EtherealUserDto MapUserDto(Entities.EtherealUser? user)
+        {
+            return new Dtos.EtherealUserDto()
+            {
+                UserId = user!.UserId,
+                UserName = user.UserName,
+                Email = user.Email,
+                FullName = user.FullName,
+                Role = user.Role,
+                Department = user.Department,
+                Position = user.Position,
+                IsActive = user.IsActive,
+            };
+        }
+
+        public async Task<Dtos.EtherealCommentDto> GetCommentById(int id)
+        {
+            (Entities.EtherealComment, Entities.EtherealUser) commentTask = await ResponseComment(id);
+
+            Entities.EtherealComment? comment = commentTask.Item1;
+
+            return new Dtos.EtherealCommentDto()
+            {
+                Id = comment.Id,
+                RecordId = comment.RecordId,
+                UserId = comment.UserId,
+                Content = comment.Content,
+                CreatedAt = comment.CreatedAt,
+                User = MapUserDto(comment.User),
+            };
+        }
+
+        public async Task<List<Dtos.EtherealCommentDto>> GetCommentsByUserId(int userId)
+        {
+            List<Dtos.EtherealCommentDto> query = new List<Dtos.EtherealCommentDto>();
+
+            List<Entities.EtherealComment> comments = await _appDbContext.ethereal_comment
+                .Include(r => r.Record)
+                .Include(u => u.User)
+                .Where(f => f.UserId == userId)
+                .ToListAsync();
+
+            foreach (Entities.EtherealComment comment in comments)
+            {
+                query.Add(new Dtos.EtherealCommentDto()
+                {
+                    Id = comment.Id,
+                    RecordId = comment.RecordId,
+                    UserId = comment.UserId,
+                    Content = comment.Content,
+                    CreatedAt = comment.CreatedAt,
+                    User = MapUserDto(comment.User)
+                });
+            }
+
+            return query;
+        }
+
+        public async Task<List<Dtos.EtherealCommentDto>> GetCommentsByRecordId(int recordId)
+        {
+            List<Dtos.EtherealCommentDto> query = new List<Dtos.EtherealCommentDto>();
+
+            List<Entities.EtherealComment> comments = await _appDbContext.ethereal_comment
+                .Include(r => r.Record)
+                .Include(u => u.User)
+                .Where(f => f.RecordId == recordId)
+                .ToListAsync();
+
+            foreach (Entities.EtherealComment comment in comments)
+            {
+                query.Add(new Dtos.EtherealCommentDto()
+                {
+                    Id = comment.Id,
+                    RecordId = comment.RecordId,
+                    UserId = comment.UserId,
+                    Content = comment.Content,
+                    CreatedAt = comment.CreatedAt,
+                    User = MapUserDto(comment.User)
+                });
+            }
+
+            return query;
+        }
+
+        public async Task<Dtos.EtherealCommentDto> CreateEtherealComment(Dtos.CreateEtherealCommentDto addCommentDto,
+            int userIdClaim)
+        {
+            if (addCommentDto == null)
+                throw new ArgumentNullException(nameof(addCommentDto));
+
+            Entities.EtherealComment newComment = new Entities.EtherealComment()
+            {
+                RecordId = addCommentDto.RecordId,
+                UserId = userIdClaim,
+                Content = addCommentDto.Content,
+                CreatedAt = DateTime.UtcNow,
+            };
+
+            await _appDbContext.ethereal_comment.AddAsync(newComment);
+            await _appDbContext.SaveChangesAsync();
+
+            (Entities.EtherealComment, Entities.EtherealUser) commentTask = await ResponseComment(newComment.Id);
+
+            Entities.EtherealComment? comment = commentTask.Item1;
+
+            return new Dtos.EtherealCommentDto()
+            {
+                Id = comment.Id,
+                RecordId = comment.RecordId,
+                UserId = comment.UserId,
+                Content = comment.Content,
+                CreatedAt = comment.CreatedAt,
+                User = MapUserDto(comment.User)
+            };
+        }
+
+        public async Task<Dtos.EtherealCommentDto> UpdateEtherealComment(int id,
+            Dtos.UpdateEtherealCommentDto updateCommentDto)
+        {
+            if (updateCommentDto == null)
+                throw new ArgumentNullException(nameof(updateCommentDto));
+
+            (Entities.EtherealComment, Entities.EtherealUser) commentTask = await ResponseComment(id);
+
+            Entities.EtherealComment? comment = commentTask.Item1;
+
+            comment.Content = updateCommentDto.Content;
+
+            await _appDbContext.SaveChangesAsync();
+
+            return await GetCommentById(comment.Id);
+        }
+
+        public async Task<Response.ApiResponse<string>> DeleteComment(int id)
+        {
+            (Entities.EtherealComment, Entities.EtherealUser) commentTask = await ResponseComment(id);
+
+            Entities.EtherealComment? comment = commentTask.Item1;
+
+            _appDbContext.ethereal_comment.Remove(comment);
+
+            await _appDbContext.SaveChangesAsync();
+
+            return new Response.ApiSuccessResponse<string>("Operation successful");
         }
     }
 }
