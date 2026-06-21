@@ -599,7 +599,7 @@ public class ReviewApi
             return await ResponseAttachment(attachment.Id);
         }
 
-        public async Task<List<Dtos.UploadAttachmentResultDto>> CreateAttachmentsDto(
+        public async Task<List<Dtos.UploadAttachmentResultDto>> CreateAttachments(
             Dtos.CreateAttachmentsDto addAttachmentsDto)
         {
             if (addAttachmentsDto.Files == null || addAttachmentsDto.Files.Count == 0)
